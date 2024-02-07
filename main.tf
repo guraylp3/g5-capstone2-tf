@@ -5,6 +5,11 @@ terraform {
       version = "~> 4.0"
     }
   }
+  backend "s3" {
+    bucket = "g5-capstone2-bucket-tf"
+    key    = "state/remote-state"
+    region = "us-west-2"
+  }
 }
 
 # Configure the AWS Provider
@@ -74,3 +79,39 @@ resource "aws_default_subnet" "default_subnet_b" {
 resource "aws_default_subnet" "default_subnet_c" {
   availability_zone = "us-west-2c"
 }
+
+resource "aws_codebuild_project" "g5_capstone2_codebuild_tf" {
+  name          = "g5-capstone2-codebuild-tf"
+  description   = "g5-capstone2-codebuild-tf"
+  build_timeout = 5
+  service_role  = "arn:aws:iam::962804699607:role/service-role/codebuild-g5-capstone2-codebuild-service-role"
+
+  artifacts {
+    type = "NO_ARTIFACTS"
+  }
+
+  cache {
+    type     = "NO_CACHE"
+  }
+
+  environment {
+    compute_type                = "BUILD_GENERAL1_SMALL"
+    image                       = "aws/codebuild/amazonlinux2-x86_64-standard:5.0"
+    type                        = "LINUX_CONTAINER"
+    image_pull_credentials_type = "CODEBUILD"
+  }
+  
+  logs_config {
+    cloudwatch_logs {
+    }
+  }
+
+  source {
+    type            = "GITHUB"
+    location        = "https://github.com/guraylp3/g5-capstone2.git"
+    git_clone_depth = 1
+  }
+
+  source_version = "master"
+}
+
