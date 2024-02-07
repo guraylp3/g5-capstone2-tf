@@ -205,6 +205,14 @@ data "aws_iam_policy_document" "codepipeline_policy" {
     actions = [
       "s3:*",
       "logs:CreateLogStream",
+      "codedeploy:CreateDeployment",
+      "codedeploy:GetApplication",
+      "codedeploy:GetApplicationRevision",
+      "codedeploy:GetDeployment",
+      "codedeploy:GetDeploymentConfig",
+      "codedeploy:RegisterApplicationRevision",
+      "ecs:*",
+      "iam:PassRole"
     ]
  
     resources = [
@@ -292,29 +300,32 @@ resource "aws_codepipeline" "g5_codepipeline_capstone2_tf" {
       }
     }
   }
-/*
-  stage {
-    name = "Deploy"
 
-    action {
-      name            = "Deploy"
-      category        = "Deploy"
-      owner           = "AWS"
-      provider        = "CloudFormation"
-      input_artifacts = ["build_output"]
-      version         = "1"
-
-      configuration = {
-        ActionMode     = "REPLACE_ON_FAILURE"
-        Capabilities   = "CAPABILITY_AUTO_EXPAND,CAPABILITY_IAM"
-        OutputFileName = "CreateStackOutput.json"
-        StackName      = "MyStack"
-        TemplatePath   = "build_output::sam-templated.yaml"
-      }
-    }
+   stage {
+       name = "Deploy"
+ 
+       action {
+           category         = "Deploy"
+           configuration    = {
+               "ClusterName" = "${aws_ecs_cluster.g5_ecs_capstone2_tf.name}"
+               "FileName"    = "imagedefinitions.json"
+               "ServiceName" = "${aws_ecs_service.g5_service_capstone2_tf.name}"
+           }
+           input_artifacts  = [
+               "g5-capstone2-build-artifact-tf",
+           ]
+           name             = "g5-capstone2-deploy-tf"
+           output_artifacts = []
+           owner            = "AWS"
+           provider         = "ECS"
+           region           = "us-west-2"
+           run_order        = 1
+           version          = "1"
+       }
+   }
   }
-  */
-}
+  
+
 
 /* // TODO: Do later if time
 resource "aws_codestarconnections_connection" "g5_capstone2_codestar_tf" {
