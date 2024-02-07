@@ -112,6 +112,6 @@ resource "aws_codebuild_project" "g5_capstone2_codebuild_tf" {
     git_clone_depth = 1
   }
 
-  source_version = "master"
+  source_version = "main"
 }
 
