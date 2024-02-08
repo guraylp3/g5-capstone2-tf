@@ -149,7 +149,7 @@ resource "aws_codebuild_project" "g5_capstone2_codebuild_tf" {
   service_role  = aws_iam_role.g5_codebuild_role_tf.arn
 
   artifacts {
-    type = "NO_ARTIFACTS"
+    type = "CODEPIPELINE"
   }
 
   cache {
@@ -168,14 +168,9 @@ resource "aws_codebuild_project" "g5_capstone2_codebuild_tf" {
     }
   }
 
-// lpgtd: Is this needed?
   source {
     type            = "CODEPIPELINE"
-    # location        = "https://github.com/guraylp3/g5-capstone2.git"
-    # git_clone_depth = 1
   }
-
-  //source_version = "main"
 }
 
 # CodePipeline Role 
