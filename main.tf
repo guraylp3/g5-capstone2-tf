@@ -170,7 +170,7 @@ resource "aws_codebuild_project" "g5_capstone2_codebuild_tf" {
 
 // lpgtd: Is this needed?
   source {
-    type            = "NO_SOURCE"
+    type            = "CODEPIPELINE"
     # location        = "https://github.com/guraylp3/g5-capstone2.git"
     # git_clone_depth = 1
   }
