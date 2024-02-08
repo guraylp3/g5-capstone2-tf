@@ -106,13 +106,6 @@ data "aws_iam_policy_document" "codebuild_policy" {
     resources = ["*"]
   }
  
-  // lpgtd: reference codestart resource defined in main.tf
-  statement {
-    effect    = "Allow"
-    actions   = ["codestar-connections:UseConnection"]
-    resources = ["arn:aws:codestar-connections:us-west-2:962804699607:connection/5bbfbc52-4a3e-4124-a0ee-daf366f4ec2b"]
-  }
- 
   statement {
     effect = "Allow"
  
@@ -215,15 +208,7 @@ data "aws_iam_policy_document" "codepipeline_policy" {
  
     resources = [
     "*"
-    //  "arn:aws:s3:::codepipeline-us-west-2-627007557336"
     ]
-  }
- 
- // lpgtd: reference codestart resource defined in main.tf
-  statement {
-    effect    = "Allow"
-    actions   = ["codestar-connections:UseConnection"]
-    resources = ["arn:aws:codestar-connections:us-west-2:962804699607:connection/5bbfbc52-4a3e-4124-a0ee-daf366f4ec2b"]
   }
  
   statement {
@@ -272,7 +257,6 @@ resource "aws_codepipeline" "g5_codepipeline_capstone2_tf" {
   stage {
     name = "Source"
 
-    // lpgtd: build codestar resource instead of reusing existing arn
     action {
       name             = "Source"
       category         = "Source"
@@ -288,11 +272,6 @@ resource "aws_codepipeline" "g5_codepipeline_capstone2_tf" {
         PollForSourceChanges  = "true"
         Branch                = "main"
         OAuthToken            = jsondecode(data.aws_secretsmanager_secret_version.current.secret_string)["github_token"]
-        /*
-        ConnectionArn    = "arn:aws:codestar-connections:us-west-2:962804699607:connection/5bbfbc52-4a3e-4124-a0ee-daf366f4ec2b"
-        FullRepositoryId = "guraylp3/g5-capstone2"
-        BranchName       = "main"
-        */
       }
     }
   }
@@ -428,12 +407,3 @@ resource "aws_api_gateway_method_response" "g5_capstone2_api_gateway_method_resp
     rest_api_id         = "${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}"
     status_code         = "200"
 }
-  
-
-
-/* // TODO: Do later if time
-resource "aws_codestarconnections_connection" "g5_capstone2_codestar_tf" {
-  name          = "g5-capstone2-codestar-tf"
-  provider_type = "GitHub"
-}
-*/
