@@ -149,9 +149,6 @@ data "aws_iam_policy_document" "codebuild_assume_role" {
   }
 }
 
-
-
-
 resource "aws_codebuild_project" "g5_capstone2_codebuild_tf" {
   name          = "g5-capstone2-codebuild-tf"
   description   = "g5-capstone2-codebuild-tf"
@@ -342,6 +339,95 @@ resource "aws_codepipeline" "g5_codepipeline_capstone2_tf" {
        }
    }
   }
+
+// Infrastrucutre for Application API
+// Import
+/*resource "aws_api_gateway_rest_api" "g5_capstone2_api_gateway_rest_api" {
+    api_key_source               = "HEADER"
+    arn                          = "arn:aws:apigateway:us-west-2::/restapis/igqma0tvx3"
+    binary_media_types           = []
+    created_date                 = "2024-02-05T21:05:58Z"
+    disable_execute_api_endpoint = false
+    execution_arn                = "arn:aws:execute-api:us-west-2:962804699607:igqma0tvx3"
+    id                           = "igqma0tvx3"
+    minimum_compression_size     = -1
+    name                         = "g5-capstone2-api"
+    put_rest_api_mode            = "overwrite"
+    root_resource_id             = "bj0yt1sloc"
+    tags                         = {}
+    tags_all                     = {}
+
+    endpoint_configuration {
+        types            = [
+            "REGIONAL",
+        ]
+        vpc_endpoint_ids = []
+    }
+}*/
+
+resource "aws_api_gateway_rest_api" "g5_capstone2_api_gateway_rest_api_tf" {
+    api_key_source               = "HEADER"
+    disable_execute_api_endpoint = false
+    name                         = "g5-capstone2-api-tf"
+    put_rest_api_mode            = "overwrite"
+    tags                         = {}
+    tags_all                     = {}
+
+    endpoint_configuration {
+        types            = [
+            "REGIONAL",
+        ]
+    }
+}
+
+resource aws_api_gateway_resource "g5_capstone2_api_gateway_resource_tf" {
+    path_part   = "get-person"
+    parent_id   = "${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.root_resource_id}"
+    rest_api_id = "${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}"
+}
+
+resource "aws_api_gateway_method" "g5_capstone2_api_gateway_method_tf" {
+    api_key_required     = false
+    authorization        = "NONE"
+    authorization_scopes = []
+    http_method          = "GET"
+    resource_id          = "${aws_api_gateway_resource.g5_capstone2_api_gateway_resource_tf.id}"
+    rest_api_id          = "${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}"
+}
+
+resource "aws_api_gateway_integration" "g5_capstone2_api_gateway_integration_tf" {
+    content_handling        = "CONVERT_TO_TEXT"
+    http_method             = "GET"
+    integration_http_method = "POST" // From docs: Lambda function can only be invoked via post
+    resource_id             = "${aws_api_gateway_resource.g5_capstone2_api_gateway_resource_tf.id}"
+    rest_api_id             = "${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}"
+    timeout_milliseconds    = 29000
+    type                    = "AWS"
+    uri                     = "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:962804699607:function:g5-get-person/invocations"
+}
+
+resource "aws_api_gateway_integration_response" "g5_capstone2_api_gateway_integration_response_tf" {
+    http_method         = "GET"
+    resource_id         = "${aws_api_gateway_resource.g5_capstone2_api_gateway_resource_tf.id}"
+    rest_api_id         = "${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}"
+    status_code         = "200"
+    response_templates  = {
+        "application/json" = ""
+    }
+    depends_on = [
+      aws_api_gateway_integration.g5_capstone2_api_gateway_integration_tf
+    ]
+}
+
+resource "aws_api_gateway_method_response" "g5_capstone2_api_gateway_method_response_tf" {
+    http_method         = "GET"
+    resource_id         = "${aws_api_gateway_resource.g5_capstone2_api_gateway_resource_tf.id}"
+    response_models     = {
+        "application/json" = "Empty"
+    }
+    rest_api_id         = "${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}"
+    status_code         = "200"
+}
   
 
 
