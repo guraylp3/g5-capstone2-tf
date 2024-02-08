@@ -412,12 +412,22 @@ resource "aws_api_gateway_method_response" "g5_capstone2_api_gateway_method_resp
     ]
 }
 
-resource "aws_lambda_permission" "apigw_lambda" {
+resource "aws_lambda_permission" "g5_capstone2_apigw_lambda_tf" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
-  function_name = "g5-get-person"
+  function_name = "${aws_lambda_function.g5_get_person_tf.function_name}"
   principal     = "apigateway.amazonaws.com"
 
   # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
   source_arn = "arn:aws:execute-api:us-west-2:962804699607:${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}/*/${aws_api_gateway_method.g5_capstone2_api_gateway_method_tf.http_method}${aws_api_gateway_resource.g5_capstone2_api_gateway_resource_tf.path}"
+}
+
+resource "aws_lambda_function" "g5_get_person_tf" {
+  filename      = "lambda_function.zip"
+  function_name = "g5-get-person-tf"
+  role          = "arn:aws:iam::962804699607:role/service-role/g5-lambda-role"
+  handler       = "lambda.lambda_handler"
+  runtime       = "python3.9"
+
+  source_code_hash = filebase64sha256("lambda_function.zip")
 }
