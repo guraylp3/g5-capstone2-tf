@@ -413,3 +413,21 @@ resource "aws_lambda_function" "g5_get_person_tf" {
 
   source_code_hash = filebase64sha256("lambda_function.zip")
 }
+
+resource "aws_api_gateway_deployment" "g5_capstone2_api_gateway_deployment_tf" {
+  rest_api_id    = "${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}"
+
+  triggers = {
+    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.body))
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_api_gateway_stage" "g5_capstone2_api_gateway_stage_tf" {
+  deployment_id = aws_api_gateway_deployment.g5_capstone2_api_gateway_deployment_tf.id
+  rest_api_id   = "${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}"
+  stage_name    = "tf_prod"
+}
