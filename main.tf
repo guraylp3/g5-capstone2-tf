@@ -106,6 +106,7 @@ data "aws_iam_policy_document" "codebuild_policy" {
     resources = ["*"]
   }
  
+  // lpgtd: reference codestart resource defined in main.tf
   statement {
     effect    = "Allow"
     actions   = ["codestar-connections:UseConnection"]
@@ -221,6 +222,7 @@ data "aws_iam_policy_document" "codepipeline_policy" {
     ]
   }
  
+ // lpgtd: reference codestart resource defined in main.tf
   statement {
     effect    = "Allow"
     actions   = ["codestar-connections:UseConnection"]
@@ -252,6 +254,14 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
+data "aws_secretsmanager_secret" "secrets" {
+  arn = "arn:aws:secretsmanager:us-west-2:962804699607:secret:g5/capstone2/secret-bZrj5F"
+}
+
+data "aws_secretsmanager_secret_version" "current" {
+  secret_id = data.aws_secretsmanager_secret.secrets.id
+}
+
 
 resource "aws_codepipeline" "g5_codepipeline_capstone2_tf" {
   name     = "g5-codepipeline-capstone2-tf"
@@ -265,19 +275,27 @@ resource "aws_codepipeline" "g5_codepipeline_capstone2_tf" {
   stage {
     name = "Source"
 
+    // lpgtd: build codestar resource instead of reusing existing arn
     action {
       name             = "Source"
       category         = "Source"
-      owner            = "AWS"
-      provider         = "CodeStarSourceConnection"
+      owner            = "ThirdParty"
+      provider         = "GitHub"
       region           = "us-west-2"
       version          = "1"
       output_artifacts = ["g5-capstone2-source-artifact-tf"]
 
       configuration = {
+        Owner                 = jsondecode(data.aws_secretsmanager_secret_version.current.secret_string)["github_user"]
+        Repo                  = jsondecode(data.aws_secretsmanager_secret_version.current.secret_string)["github_repo"]
+        PollForSourceChanges  = "true"
+        Branch                = "main"
+        OAuthToken            = jsondecode(data.aws_secretsmanager_secret_version.current.secret_string)["github_token"]
+        /*
         ConnectionArn    = "arn:aws:codestar-connections:us-west-2:962804699607:connection/5bbfbc52-4a3e-4124-a0ee-daf366f4ec2b"
         FullRepositoryId = "guraylp3/g5-capstone2"
         BranchName       = "main"
+        */
       }
     }
   }
