@@ -409,6 +409,19 @@ resource "aws_api_gateway_method_response" "g5_capstone2_api_gateway_method_resp
     }
     rest_api_id         = "${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}"
     status_code         = "200"
+    depends_on = [
+      aws_api_gateway_resource.g5_capstone2_api_gateway_resource_tf
+    ]
+}
+
+resource "aws_lambda_permission" "apigw_lambda" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = "g5-get-person"
+  principal     = "apigateway.amazonaws.com"
+
+  # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
+  source_arn = "arn:aws:execute-api:us-west-2:962804699607:${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}/*/${aws_api_gateway_method.g5_capstone2_api_gateway_method_tf.http_method}${aws_api_gateway_resource.g5_capstone2_api_gateway_resource_tf.path}"
 }
   
 
