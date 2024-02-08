@@ -321,29 +321,6 @@ resource "aws_codepipeline" "g5_codepipeline_capstone2_tf" {
   }
 
 // Infrastrucutre for Application API
-// Import
-/*resource "aws_api_gateway_rest_api" "g5_capstone2_api_gateway_rest_api" {
-    api_key_source               = "HEADER"
-    arn                          = "arn:aws:apigateway:us-west-2::/restapis/igqma0tvx3"
-    binary_media_types           = []
-    created_date                 = "2024-02-05T21:05:58Z"
-    disable_execute_api_endpoint = false
-    execution_arn                = "arn:aws:execute-api:us-west-2:962804699607:igqma0tvx3"
-    id                           = "igqma0tvx3"
-    minimum_compression_size     = -1
-    name                         = "g5-capstone2-api"
-    put_rest_api_mode            = "overwrite"
-    root_resource_id             = "bj0yt1sloc"
-    tags                         = {}
-    tags_all                     = {}
-
-    endpoint_configuration {
-        types            = [
-            "REGIONAL",
-        ]
-        vpc_endpoint_ids = []
-    }
-}*/
 
 resource "aws_api_gateway_rest_api" "g5_capstone2_api_gateway_rest_api_tf" {
     api_key_source               = "HEADER"
@@ -391,6 +368,11 @@ resource "aws_api_gateway_integration_response" "g5_capstone2_api_gateway_integr
     resource_id         = "${aws_api_gateway_resource.g5_capstone2_api_gateway_resource_tf.id}"
     rest_api_id         = "${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}"
     status_code         = "200"
+    response_parameters = {
+      "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
+      "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+    }
     response_templates  = {
         "application/json" = ""
     }
@@ -407,6 +389,11 @@ resource "aws_api_gateway_method_response" "g5_capstone2_api_gateway_method_resp
     }
     rest_api_id         = "${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}"
     status_code         = "200"
+    response_parameters = {
+      "method.response.header.Access-Control-Allow-Headers" = true
+      "method.response.header.Access-Control-Allow-Methods" = true
+      "method.response.header.Access-Control-Allow-Origin"  = true
+    }
     depends_on = [
       aws_api_gateway_resource.g5_capstone2_api_gateway_resource_tf
     ]
