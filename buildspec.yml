@@ -15,4 +15,5 @@ phases:
       - terraform validate
   build:
     commands:
+    # apply
       - terraform apply --auto-approve
