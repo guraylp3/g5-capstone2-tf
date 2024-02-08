@@ -107,12 +107,6 @@ data "aws_iam_policy_document" "codebuild_policy" {
   }
  
   statement {
-    effect    = "Allow"
-    actions   = ["codestar-connections:UseConnection"]
-    resources = ["arn:aws:codestar-connections:us-west-2:962804699607:connection/5bbfbc52-4a3e-4124-a0ee-daf366f4ec2b"]
-  }
- 
-  statement {
     effect = "Allow"
  
     actions = [
@@ -214,14 +208,7 @@ data "aws_iam_policy_document" "codepipeline_policy" {
  
     resources = [
     "*"
-    //  "arn:aws:s3:::codepipeline-us-west-2-627007557336"
     ]
-  }
- 
-  statement {
-    effect    = "Allow"
-    actions   = ["codestar-connections:UseConnection"]
-    resources = ["arn:aws:codestar-connections:us-west-2:962804699607:connection/5bbfbc52-4a3e-4124-a0ee-daf366f4ec2b"]
   }
  
   statement {
@@ -249,6 +236,14 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
+data "aws_secretsmanager_secret" "secrets" {
+  arn = "arn:aws:secretsmanager:us-west-2:962804699607:secret:g5/capstone2/secret-bZrj5F"
+}
+
+data "aws_secretsmanager_secret_version" "current" {
+  secret_id = data.aws_secretsmanager_secret.secrets.id
+}
+
 
 resource "aws_codepipeline" "g5_codepipeline_capstone2_tf" {
   name     = "g5-codepipeline-capstone2-tf"
@@ -265,16 +260,18 @@ resource "aws_codepipeline" "g5_codepipeline_capstone2_tf" {
     action {
       name             = "Source"
       category         = "Source"
-      owner            = "AWS"
-      provider         = "CodeStarSourceConnection"
+      owner            = "ThirdParty"
+      provider         = "GitHub"
       region           = "us-west-2"
       version          = "1"
       output_artifacts = ["g5-capstone2-source-artifact-tf"]
 
       configuration = {
-        ConnectionArn    = "arn:aws:codestar-connections:us-west-2:962804699607:connection/5bbfbc52-4a3e-4124-a0ee-daf366f4ec2b"
-        FullRepositoryId = "guraylp3/g5-capstone2"
-        BranchName       = "main"
+        Owner                 = jsondecode(data.aws_secretsmanager_secret_version.current.secret_string)["github_user"]
+        Repo                  = jsondecode(data.aws_secretsmanager_secret_version.current.secret_string)["github_repo"]
+        PollForSourceChanges  = "true"
+        Branch                = "main"
+        OAuthToken            = jsondecode(data.aws_secretsmanager_secret_version.current.secret_string)["github_token"]
       }
     }
   }
@@ -423,12 +420,3 @@ resource "aws_lambda_permission" "apigw_lambda" {
   # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
   source_arn = "arn:aws:execute-api:us-west-2:962804699607:${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}/*/${aws_api_gateway_method.g5_capstone2_api_gateway_method_tf.http_method}${aws_api_gateway_resource.g5_capstone2_api_gateway_resource_tf.path}"
 }
-  
-
-
-/* // TODO: Do later if time
-resource "aws_codestarconnections_connection" "g5_capstone2_codestar_tf" {
-  name          = "g5-capstone2-codestar-tf"
-  provider_type = "GitHub"
-}
-*/
