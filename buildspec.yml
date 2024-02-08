@@ -1,0 +1,19 @@
+version: 0.2
+ 
+phases:
+  install:
+    commands:
+     # install terraform binary
+      - curl -s -qL -o terraform_install.zip https://releases.hashicorp.com/terraform/1.7.3/terraform_1.7.3_linux_amd64.zip
+      - unzip terraform_install.zip -d /usr/bin/
+      - chmod +x /usr/bin/terraform
+    finally:
+      - terraform --version
+  pre_build:
+    commands:
+      - terraform init
+      - terraform validate
+  build:
+    commands:
+    # apply
+      - terraform apply --auto-approve
