@@ -383,7 +383,7 @@ resource "aws_api_gateway_integration" "g5_capstone2_api_gateway_integration_tf"
     rest_api_id             = "${aws_api_gateway_rest_api.g5_capstone2_api_gateway_rest_api_tf.id}"
     timeout_milliseconds    = 29000
     type                    = "AWS"
-    uri                     = "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:962804699607:function:g5-get-person/invocations"
+    uri                     = "${aws_lambda_function.g5_get_person_tf.invoke_arn}"
 }
 
 resource "aws_api_gateway_integration_response" "g5_capstone2_api_gateway_integration_response_tf" {
